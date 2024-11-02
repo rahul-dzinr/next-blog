@@ -1,86 +1,111 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-// Update the interface to match the Blog type
-interface Blog {
-  title: string
-  content: string
-  image: File | null
-  tags: string
-}
-
 interface BlogFormProps {
-  initialData?: Blog
-  onSubmit: (formData: FormData) => void
+  onSubmit: (formData: FormData) => Promise<void>
   submitButtonText: string
 }
 
-export default function BlogForm({ initialData, onSubmit, submitButtonText }: BlogFormProps) {
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+export default function BlogForm({ onSubmit, submitButtonText }: BlogFormProps) {
+  const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('') // Added subtitle state
+  const [description, setDescription] = useState('') // Changed content to description
+  const [category, setCategory] = useState('') // Added category state
+  const [image, setImage] = useState<File | null>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const target = e.target; // Get the event target
+    if (target.files && target.files.length > 0) {
+      setImage(target.files[0]); // Set the first file if it exists
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    onSubmit(formData)
-  }, [onSubmit])
+    const formData = new FormData()
+    formData.append('title', title)
+    formData.append('subtitle', subtitle) // Append subtitle
+    formData.append('description', description) // Append description
+    formData.append('category', category) // Append category
+    if (image) {
+      formData.append('image', image) // Append the image if it exists
+    }
+    await onSubmit(formData)
+  }
 
   return (
-    <Card className="w-full max-w-3xl">
-      <CardHeader>
-        <CardTitle className="text-3xl font-bold text-center">{submitButtonText} Blog</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Blog Title</Label>
-            <Input
-              id="title"
-              name="title"
-              defaultValue={initialData?.title}
-              placeholder="Enter blog title"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="content">Blog Content</Label>
-            <Textarea
-              id="content"
-              name="content"
-              rows={8}
-              defaultValue={initialData?.content}
-              placeholder="Enter blog content"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="image">Featured Image</Label>
-            <Input
-              id="image"
-              name="image"
-              type="file"
-              accept="image/*"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              name="tags"
-              defaultValue={initialData?.tags}
-              placeholder="Enter tags separated by commas"
-            />
-          </div>
-          <CardFooter className="px-0">
-            <Button type="submit" className="w-full">
-              {submitButtonText}
-            </Button>
-          </CardFooter>
-        </form>
-      </CardContent>
-    </Card>
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl space-y-4">
+      <div>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+          Title
+        </label>
+        <Input
+          id="title"
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          className="mt-1"
+        />
+      </div>
+      <div>
+        <label htmlFor="subtitle" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+          Subtitle
+        </label>
+        <Input
+          id="subtitle"
+          type="text"
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)} // Handle subtitle change
+          required
+          className="mt-1"
+        />
+      </div>
+      <div>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+          Description
+        </label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)} // Handle description change
+          required
+          className="mt-1"
+          rows={10}
+        />
+      </div>
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+          Category
+        </label>
+        <Input
+          id="category"
+          type="text"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)} // Handle category change
+          required
+          className="mt-1"
+        />
+      </div>
+      <div>
+        <label htmlFor="image" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
+          Image
+        </label>
+        <Input
+          id="image"
+          type="file"
+          accept="image/*" // Optional: restrict to image types
+          onChange={handleFileChange}
+          className="mt-1"
+        />
+      </div>
+      <Button type="submit" className="w-full">
+        {submitButtonText}
+      </Button>
+    </form>
   )
 }

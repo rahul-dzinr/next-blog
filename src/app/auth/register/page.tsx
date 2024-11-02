@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Github, Waves } from "lucide-react"
 import Image from 'next/image'
 import Link from 'next/link'
+import {baseUrl} from '../../../../config'
 
 // Defining a type for form data to ensure type safety
 interface RegistrationData {
@@ -76,7 +77,7 @@ export default function Register() {
 
     try {
       // Using async/await for cleaner promise handling
-      const response = await axios.post("https://react30.onrender.com/api/user/register", {
+      const response = await axios.post(`${baseUrl}/register`, {
         email: formData.email,
         username: formData.username,
         password: formData.password

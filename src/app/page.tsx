@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import SearchBar from '@/components/blog-component/searchBar'
 import BlogList from '@/components/blog-component/blogList'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { PlusCircle, Menu } from 'lucide-react'
+import { PlusCircle } from 'lucide-react'
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('')

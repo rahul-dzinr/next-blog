@@ -4,39 +4,62 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { baseUrl } from '../../../../config'
+
+interface LoginResponse {
+  token: string;
+  // Add other response fields if needed
+}
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   
-  // Use Next.js router for navigation
   const router = useRouter()
 
-  // Function to handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setIsLoading(true)
 
     try {
-      // Send login data to your backend
-      const response = await axios.post("https://react30.onrender.com/api/user/login", {
+      const response: AxiosResponse<LoginResponse> = await axios.post(`${baseUrl}/login`, {
         email,
         password
       })
 
-      // Check for successful login
-      if (response.status === 200) {
-        router.push('/')  // Redirect to homepage
+      if (response.status === 200 && response.data.token) {
+        // Store token in localStorage
+        localStorage.setItem('token', response.data.token)
+        
+        // Update Authorization header for future requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`
+        
+        // Redirect to home page
+        router.push('/')
+        router.refresh() // Refresh the current route to update server components
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
+      let errorMessage = 'Login failed. Please try again.'
+      
+      if (axios.isAxiosError(err)) {
+        // Handle specific API error messages
+        errorMessage = err.response?.data?.message || errorMessage
+      } else if (err instanceof Error) {
+        errorMessage = err.message
+      }
+      
+      setError(errorMessage)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -50,16 +73,16 @@ export default function Login() {
             alt="Logo"
             width={48}
             height={48}
+            priority
           />
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
         </div>
 
-        {/* Display error message if login fails */}
         {error && (
-          <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
-            {error}
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span className="block sm:inline">{error}</span>
           </div>
         )}
 
@@ -77,6 +100,7 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
             <div className='space-y-3'>
@@ -91,6 +115,7 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -102,6 +127,7 @@ export default function Login() {
                 name="remember-me"
                 checked={rememberMe}
                 onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                disabled={isLoading}
               />
               <Label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                 Remember me
@@ -117,9 +143,10 @@ export default function Login() {
           <div>
             <Button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={isLoading}
             >
-              Sign in
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
           </div>
         </form>
@@ -136,10 +163,10 @@ export default function Login() {
             </div>
           </div>
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <Button variant="outline">
+            <Button variant="outline" disabled={isLoading}>
               Google
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" disabled={isLoading}>
               GitHub
             </Button>
           </div>
