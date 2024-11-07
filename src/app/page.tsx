@@ -39,11 +39,11 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-gray-100 dark:bg-gray-700 rounded-full p-1">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-gray-700 rounded-full p-1">
                 <TabsTrigger value="all" className="rounded-full">All Posts</TabsTrigger>
                 <TabsTrigger value="popular" className="rounded-full">Popular</TabsTrigger>
                 <TabsTrigger value="recent" className="rounded-full">Recent</TabsTrigger>
-                <TabsTrigger value="drafts" className="rounded-full">Drafts</TabsTrigger>
+              
               </TabsList>
               <TabsContent value="all" className="mt-6">
                 <div className="flex justify-end mb-4">
@@ -56,9 +56,6 @@ export default function Home() {
               </TabsContent>
               <TabsContent value="recent">
                 <p className="text-center text-gray-500 dark:text-gray-400 py-8">Recent posts coming soon!</p>
-              </TabsContent>
-              <TabsContent value="drafts">
-                <p className="text-center text-gray-500 dark:text-gray-400 py-8">Drafts coming soon!</p>
               </TabsContent>
             </Tabs>
           </CardContent>
