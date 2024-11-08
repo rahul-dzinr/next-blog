@@ -1,39 +1,37 @@
-import { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
-import BlogCard from './[id]/page';
+'use client'
 
-const baseUrl = 'https://react30.onrender.com/api/user';
+import { useEffect, useState, useMemo } from 'react'
+import BlogCard from './[id]/page'
+import { getAllBlogs } from '@/http/blog'
 
 interface Blog {
-  _id: string;
-  title: string;
-  description: string;
-  author: string;
-  date: string;
+  _id: string
+  title: string
+  description: string
+  author: string
+  date: string
 }
 
 export default function BlogList({ searchTerm = '' }: { searchTerm?: string }) {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [blogs, setBlogs] = useState<Blog[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchBlogs = async () => {
+    async function loadBlogs() {
       try {
-        setIsLoading(true);
-        const response = await axios.get(`${baseUrl}/blog`);
-        setBlogs(response.data.data);
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching blogs:', error);
-        setError('Failed to fetch blogs. Please try again later.');
+        setIsLoading(true)
+        const data = await getAllBlogs()
+        setBlogs(data)
+      } catch (err) {
+        setError('Failed to fetch blogs')
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    fetchBlogs();
-  }, []);
+    loadBlogs()
+  }, [])
 
   const filteredBlogs = useMemo(
     () =>
@@ -41,10 +39,10 @@ export default function BlogList({ searchTerm = '' }: { searchTerm?: string }) {
         blog.title.toLowerCase().includes(searchTerm.toLowerCase())
       ),
     [blogs, searchTerm]
-  );
+  )
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>{error}</div>
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -53,11 +51,11 @@ export default function BlogList({ searchTerm = '' }: { searchTerm?: string }) {
           key={blog._id}
           _id={blog._id}
           title={blog.title}
-          excerpt={blog.description} // Using 'description' as excerpt
+          excerpt={blog.description}
           author={blog.author}
           date={blog.date}
         />
       ))}
     </div>
-  );
+  )
 }
